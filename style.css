@@ -1,0 +1,154 @@
+:root {
+    --primary:#0056d6;
+    --primary-dark:#003ca3;
+    --secondary:#25d366;
+    --bg-light:#eef3ff;
+    --white:#fff;
+    --dark:#111;
+    --gray:#555;
+    --radius:12px;
+    --shadow:0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Reset */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
+body{background:var(--bg-light);color:var(--dark);}
+
+/* Header */
+header{
+    background:var(--white);
+    box-shadow:var(--shadow);
+    position:sticky;top:0;z-index:100;
+}
+.header-container{
+    padding:12px 20px;
+    display:flex;justify-content:space-between;align-items:center;
+}
+nav ul{display:flex;gap:30px;}
+nav a{
+    font-size:18px;font-weight:700;color:var(--dark);
+    cursor:pointer;transition:.3s;
+}
+nav a:hover,nav a.active{color:var(--primary);}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;}
+.logo-image{
+    width:60px;height:60px;
+    background:var(--primary);
+    border-radius:50%;
+    color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    font-size:32px;font-weight:900;
+    box-shadow:var(--shadow);
+}
+.logo-text{
+    font-size:32px;
+    font-weight:900;
+    color:var(--dark);
+    letter-spacing:1px;
+}
+.logo-text span{
+    color:var(--primary);
+    font-weight:1000;
+}
+
+/* Hero */
+.hero{text-align:center;padding:100px 20px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:var(--white);border-radius:0 0 35px 35px;}
+.brand-logo i{font-size:75px;}
+.brand-name{font-size:55px;font-weight:900;margin:10px 0;}
+.brand-tagline{font-size:20px;font-weight:600;width:90%;max-width:700px;margin:auto;}
+
+/* Buttons */
+.btn{
+    padding:15px 30px;
+    font-size:18px;font-weight:900;
+    border:none;border-radius:var(--radius);
+    cursor:pointer;transition:.3s;margin:10px;
+}
+.btn-primary{background:var(--primary);color:var(--white);}
+.btn-left{background:var(--white);color:var(--primary);}
+.btn-right{background:transparent;border:3px solid var(--white);color:var(--white);}
+.btn-left:hover,.btn-right:hover{transform:translateY(-4px);}
+.btn-primary:hover{background:var(--primary-dark);}
+
+/* About */
+.about{text-align:center;padding:80px 20px;background:var(--white);}
+.about h2{font-size:40px;font-weight:900;color:var(--primary);}
+.about-text{
+    max-width:760px;margin:auto;
+    font-size:19px;font-weight:600;color:var(--gray);
+    margin-bottom:45px;
+}
+.about-features{
+    display:flex;justify-content:center;gap:25px;flex-wrap:wrap;
+}
+.about-box{
+    width:250px;
+    background:var(--bg-light);
+    padding:25px;border-radius:var(--radius);
+    box-shadow:var(--shadow);
+}
+.about-box i{font-size:45px;color:var(--primary);}
+.about-box h3{font-size:21px;font-weight:900;margin:8px 0;}
+
+/* Section Title */
+.section-title{text-align:center;font-size:38px;font-weight:900;color:var(--primary);margin:35px 0;}
+
+/* Grid Products */
+.products-grid{
+    padding:0 20px;
+    display:grid;gap:25px;
+    grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+}
+.product-card{
+    background:var(--white);
+    text-align:center;
+    padding:25px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+}
+.product-card h3{font-size:20px;font-weight:900;margin:8px 0;}
+.product-icon{font-size:60px;color:var(--primary);}
+.product-card-price{font-size:20px;font-weight:900;color:var(--primary);}
+
+/* Forms */
+form{max-width:480px;margin:auto;}
+.form-control{
+    width:100%;padding:14px;
+    border-radius:var(--radius);
+    border:2px solid #ccc;
+    font-size:16px;font-weight:600;
+    margin-bottom:16px;
+}
+
+/* Admin Panel */
+.admin-toggle{margin:10px;padding:10px 16px;font-weight:900;}
+.admin-panel{
+    display:none;background:var(--white);
+    padding:20px;border-radius:var(--radius);
+    box-shadow:var(--shadow);margin:20px;
+}
+.admin-panel.active{display:block;}
+.admin-form{display:grid;gap:15px;}
+
+/* WhatsApp Floating */
+.whatsapp-float{
+    position:fixed;right:20px;bottom:20px;
+    width:60px;height:60px;background:var(--secondary);
+    color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;box-shadow:var(--shadow);
+}
+
+/* Mobile */
+.mobile-menu{display:none;font-size:28px;color:var(--dark);}
+@media(max-width:760px){
+    nav ul{display:none;flex-direction:column;background:var(--white);width:100%;left:0;top:70px;padding:20px;position:absolute;}
+    nav ul.show{display:flex;}
+    .mobile-menu{display:block;}
+    .logo-text{font-size:26px;}
+    .logo-image{width:50px;height:50px;font-size:26px;}
+}
