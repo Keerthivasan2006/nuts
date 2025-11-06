@@ -109,6 +109,13 @@ const productForms = document.getElementById('product-forms');
 const orderList = document.getElementById('order-list');
 const noOrdersMessage = document.getElementById('no-orders-message');
 
+// New owner portal elements
+const orderNotifications = document.getElementById('order-notifications');
+const noNotificationsMessage = document.getElementById('no-notifications-message');
+const sendAllSmsBtn = document.getElementById('send-all-sms');
+const refreshOrdersBtn = document.getElementById('refresh-orders');
+const addProductBtn = document.getElementById('add-product-btn');
+
 // Print bill elements
 const printBill = document.getElementById('print-bill');
 const billDate = document.getElementById('bill-date');
@@ -193,7 +200,7 @@ function renderProducts(filter = 'all', searchTerm = '') {
         productCard.className = 'product-card';
         productCard.innerHTML = `
             <div class="product-image">
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/320x250?text=Image+Not+Found'">
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
@@ -221,7 +228,7 @@ function renderProducts(filter = 'all', searchTerm = '') {
     setupProductEventListeners();
 }
 
-// Render owner portal forms
+// Render owner portal forms with image previews
 function renderOwnerForms() {
     productForms.innerHTML = '';
     
@@ -253,9 +260,21 @@ function renderOwnerForms() {
                         <option value="premium" ${product.category === 'premium' ? 'selected' : ''}>Premium</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="${productId}-image">Nut Image URL</label>
-                    <input type="text" class="form-control" id="${productId}-image" value="${product.image}">
+            </div>
+            <div class="product-image-section">
+                <div class="current-image">
+                    <h5>Current Image</h5>
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/200x150?text=Image+Not+Found'">
+                </div>
+                <div class="image-url-input">
+                    <label for="${productId}-image">Product Image URL</label>
+                    <input type="text" class="form-control" id="${productId}-image" value="${product.image}" 
+                           placeholder="Enter image URL" oninput="updateImagePreview('${productId}')">
+                    <div class="image-preview-container">
+                        <div class="image-preview" id="${productId}-preview">
+                            <span>New image preview will appear here</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -305,6 +324,171 @@ function renderOrderHistory() {
         
         orderList.appendChild(orderItem);
     });
+}
+
+// Render order notifications for SMS
+function renderOrderNotifications() {
+    orderNotifications.innerHTML = '';
+    
+    if (orders.length === 0) {
+        noNotificationsMessage.style.display = 'block';
+        orderNotifications.appendChild(noNotificationsMessage);
+        return;
+    }
+    
+    noNotificationsMessage.style.display = 'none';
+    
+    // Sort orders by date (newest first)
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedOrders.forEach(order => {
+        const notification = document.createElement('div');
+        notification.className = 'order-notification';
+        notification.innerHTML = `
+            <div class="notification-header">
+                <div class="customer-name">${order.customerName}</div>
+                <div class="order-time">${new Date(order.date).toLocaleString()}</div>
+            </div>
+            <div class="order-details">
+                <div class="order-items-list">
+                    ${order.items.map(item => 
+                        `${item.quantity}g ${item.name} - ₹${item.total.toFixed(2)}`
+                    ).join('<br>')}
+                </div>
+                <div class="order-total">Total: ₹${order.total.toFixed(2)}</div>
+            </div>
+            <div class="sms-actions">
+                <button class="btn btn-sms-action" onclick="sendSMSNotification('${order.customerName}', ${order.total})">
+                    Send SMS
+                </button>
+                <button class="btn btn-sms-action btn-secondary" onclick="viewOrderDetails(${order.id})">
+                    View Details
+                </button>
+            </div>
+        `;
+        
+        orderNotifications.appendChild(notification);
+    });
+}
+
+// Update image preview for product forms
+function updateImagePreview(productId) {
+    const imageUrl = document.getElementById(`${productId}-image`).value;
+    const preview = document.getElementById(`${productId}-preview`);
+    
+    if (imageUrl) {
+        preview.innerHTML = `<img src="${imageUrl}" alt="Preview" onerror="this.parentElement.innerHTML='<span>Invalid image URL</span>'">`;
+        preview.classList.add('has-image');
+    } else {
+        preview.innerHTML = '<span>Image preview will appear here</span>';
+        preview.classList.remove('has-image');
+    }
+}
+
+// Update new product image preview
+function updateNewProductPreview() {
+    const imageUrl = document.getElementById('new-product-image').value;
+    const preview = document.getElementById('new-product-preview');
+    
+    if (imageUrl) {
+        preview.innerHTML = `<img src="${imageUrl}" alt="Preview" onerror="this.parentElement.innerHTML='<span>Invalid image URL</span>'">`;
+        preview.classList.add('has-image');
+    } else {
+        preview.innerHTML = '<span>Image preview will appear here</span>';
+        preview.classList.remove('has-image');
+    }
+}
+
+// Send SMS notification
+function sendSMSNotification(customerName, total) {
+    // Simulate SMS sending
+    const message = `Hi ${customerName}, your nut order of ₹${total.toFixed(2)} has been confirmed! Thank you for choosing Netus Bissnus.`;
+    
+    // Show notification
+    showNotification(`SMS sent to ${customerName}: ${message}`);
+    
+    // In a real application, you would integrate with an SMS API here
+    console.log('SMS Message:', message);
+}
+
+// Send SMS to all customers
+function sendSMSToAll() {
+    if (orders.length === 0) {
+        showNotification('No orders to send SMS to.', true);
+        return;
+    }
+    
+    // Get unique customers
+    const uniqueCustomers = [...new Set(orders.map(order => order.customerName))];
+    
+    uniqueCustomers.forEach(customer => {
+        const customerOrders = orders.filter(order => order.customerName === customer);
+        const totalSpent = customerOrders.reduce((sum, order) => sum + order.total, 0);
+        
+        const message = `Hi ${customer}, thank you for your recent orders totaling ₹${totalSpent.toFixed(2)}! We appreciate your business at Netus Bissnus.`;
+        
+        // Simulate SMS sending
+        console.log(`SMS to ${customer}:`, message);
+    });
+    
+    showNotification(`SMS notifications sent to ${uniqueCustomers.length} customers`);
+}
+
+// View order details
+function viewOrderDetails(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        const itemsList = order.items.map(item => 
+            `${item.quantity}g ${item.name} - ₹${item.total.toFixed(2)}`
+        ).join('\n');
+        
+        alert(`Order Details for ${order.customerName}:\n\n${itemsList}\n\nTotal: ₹${order.total.toFixed(2)}\nDate: ${new Date(order.date).toLocaleString()}`);
+    }
+}
+
+// Add new product
+function addNewProduct() {
+    const name = document.getElementById('new-product-name').value.trim();
+    const price = parseInt(document.getElementById('new-product-price').value);
+    const category = document.getElementById('new-product-category').value;
+    const description = document.getElementById('new-product-description').value.trim();
+    const image = document.getElementById('new-product-image').value.trim();
+    
+    // Validation
+    if (!name || !price || price <= 0 || !description || !image) {
+        showNotification('Please fill all fields with valid values.', true);
+        return;
+    }
+    
+    // Generate a unique product ID
+    const productId = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+    
+    // Add to products
+    products[productId] = {
+        name,
+        price,
+        category,
+        description,
+        image
+    };
+    
+    // Clear form
+    document.getElementById('new-product-name').value = '';
+    document.getElementById('new-product-price').value = '';
+    document.getElementById('new-product-description').value = '';
+    document.getElementById('new-product-image').value = '';
+    document.getElementById('new-product-preview').innerHTML = '<span>Image preview will appear here</span>';
+    document.getElementById('new-product-preview').classList.remove('has-image');
+    
+    // Refresh product forms
+    renderOwnerForms();
+    
+    // Update products display
+    const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+    const searchTerm = productSearch.value;
+    renderProducts(activeFilter, searchTerm);
+    
+    showNotification(`New product "${name}" added successfully!`);
 }
 
 // Setup event listeners
@@ -429,6 +613,7 @@ function setupEventListeners() {
             // If owner is logged in, update the order display
             if (ownerContent.style.display === 'block') {
                 renderOrderHistory();
+                renderOrderNotifications();
             }
         }, 1500);
     });
@@ -472,6 +657,7 @@ function setupEventListeners() {
             ownerContent.style.display = 'block';
             renderOwnerForms();
             renderOrderHistory();
+            renderOrderNotifications();
         } else {
             showNotification('Incorrect password!', true);
         }
@@ -488,6 +674,15 @@ function setupEventListeners() {
             saveProductChanges();
             showNotification('Nut product changes saved successfully!');
         }
+    });
+
+    // New product management event listeners
+    document.getElementById('add-product-btn').addEventListener('click', addNewProduct);
+    document.getElementById('new-product-image').addEventListener('input', updateNewProductPreview);
+    document.getElementById('send-all-sms').addEventListener('click', sendSMSToAll);
+    document.getElementById('refresh-orders').addEventListener('click', () => {
+        renderOrderNotifications();
+        showNotification('Orders refreshed successfully!');
     });
 }
 
