@@ -1,203 +1,752 @@
-// Product Management
-let products = [];
-let isAdmin = false;
-const adminPassword = "admin123";
-let editingProductId = null;
-
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
-
-function saveProductsToLocalStorage() {
-    localStorage.setItem('asautomation_products', JSON.stringify(products));
-}
-
-function loadProducts() {
-    const saved = localStorage.getItem('asautomation_products');
-    if (saved) {
-        products = JSON.parse(saved);
-    } else {
-        products = [
-            {
-                id: 1,
-                name: "Water Level Controller",
-                price: "Contact for Price",
-                description: "Manual ON + Auto OFF system to prevent overflow and save electricity",
-                icon: "fas fa-water",
-                features: ["Manual ON + Auto OFF", "Prevents overflow", "1 Year Warranty"]
-            },
-            {
-                id: 2,
-                name: "Temperature Controller",
-                price: "₹3,499",
-                description: "Automatically regulates temperature for home/industry",
-                icon: "fas fa-temperature-high",
-                features: ["Digital Display", "Energy Efficient", "1 Year Warranty"]
-            }
-        ];
-        saveProductsToLocalStorage();
+// Product data in Indian Rupees - Price per 50g
+let products = {
+    almonds: { 
+        name: "Premium California Almonds", 
+        price: 90, // ₹90 per 50g
+        description: "Large, crunchy California almonds with rich flavor and perfect texture.",
+        image: "https://images.unsplash.com/photo-1615485500606-f3d3f2f7fb7f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    cashews: { 
+        name: "Jumbo Whole Cashews", 
+        price: 110, // ₹110 per 50g
+        description: "Extra large whole cashews with creamy texture and buttery flavor.",
+        image: "https://images.unsplash.com/photo-1626074353765-517f5517d9d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    walnuts: { 
+        name: "Premium Walnut Halves", 
+        price: 95, // ₹95 per 50g
+        description: "Fresh walnut halves with rich, earthy flavor and crisp texture.",
+        image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    pistachios: { 
+        name: "Iranian Pistachios", 
+        price: 130, // ₹130 per 50g
+        description: "Premium Iranian pistachios, naturally opened and lightly salted.",
+        image: "https://images.unsplash.com/photo-1615485500606-f3d3f2f7fb7f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    peanuts: { 
+        name: "Virginia Peanuts", 
+        price: 40, // ₹40 per 50g
+        description: "Large Virginia peanuts, perfect for snacking and recipes.",
+        image: "https://images.unsplash.com/photo-1623650077315-9df4c0a7d3b6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "popular"
+    },
+    macadamia: { 
+        name: "Hawaiian Macadamia Nuts", 
+        price: 160, // ₹160 per 50g
+        description: "Rich, buttery Hawaiian macadamia nuts, lightly roasted.",
+        image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    brazil: { 
+        name: "Brazil Nuts", 
+        price: 80, // ₹80 per 50g
+        description: "Large Brazil nuts with rich, creamy texture and mild flavor.",
+        image: "https://images.unsplash.com/photo-1615485500606-f3d3f2f7fb7f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "popular"
+    },
+    hazelnuts: { 
+        name: "European Hazelnuts", 
+        price: 120, // ₹120 per 50g
+        description: "Premium European hazelnuts with sweet, rich flavor.",
+        image: "https://images.unsplash.com/photo-1626074353765-517f5517d9d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
+    },
+    pecans: { 
+        name: "Pecan Halves", 
+        price: 140, // ₹140 per 50g
+        description: "Sweet, buttery pecan halves perfect for baking and snacking.",
+        image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+        category: "premium"
     }
+};
+
+// Cart data
+let cart = {};
+
+// Order history data
+let orders = [];
+
+// Carousel data
+let currentSlide = 0;
+let slideInterval;
+
+// DOM elements
+const pages = document.querySelectorAll('.page');
+const navLinks = document.querySelectorAll('.nav-link');
+const productsGrid = document.querySelector('.products-grid');
+const cartItems = document.querySelector('.cart-items');
+const emptyCartMessage = document.getElementById('empty-cart-message');
+const subtotalElement = document.getElementById('subtotal');
+const totalElement = document.getElementById('total');
+const continueShoppingBtn = document.getElementById('continue-shopping');
+const placeOrderBtn = document.getElementById('place-order');
+const printSummaryBtn = document.getElementById('print-summary');
+const notification = document.getElementById('notification');
+const cartCount = document.querySelector('.cart-count');
+const productSearch = document.getElementById('product-search');
+const filterButtons = document.querySelectorAll('.filter-btn');
+
+// Carousel elements
+const carouselInner = document.querySelector('.carousel-inner');
+const carouselItems = document.querySelectorAll('.carousel-item');
+const prevButton = document.querySelector('.carousel-control.prev');
+const nextButton = document.querySelector('.carousel-control.next');
+const indicators = document.querySelectorAll('.carousel-indicator');
+
+// Owner portal elements
+const passwordSection = document.getElementById('password-section');
+const ownerContent = document.getElementById('owner-content');
+const ownerPassword = document.getElementById('owner-password');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const saveChangesBtn = document.getElementById('save-changes');
+const productForms = document.getElementById('product-forms');
+const orderList = document.getElementById('order-list');
+const noOrdersMessage = document.getElementById('no-orders-message');
+
+// Print bill elements
+const printBill = document.getElementById('print-bill');
+const billDate = document.getElementById('bill-date');
+const billItems = document.getElementById('bill-items');
+const billTotal = document.getElementById('bill-total');
+
+// Owner password
+const OWNER_PASSWORD = "1234";
+
+// Initialize the website
+function init() {
     renderProducts();
+    setupEventListeners();
+    updateCartCount();
+    startCarousel();
 }
 
-function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    const select = document.getElementById('product');
-    if (!grid) return;
+// Carousel functions
+function startCarousel() {
+    slideInterval = setInterval(() => {
+        nextSlide();
+    }, 5000);
+}
 
-    grid.innerHTML = '';
-    select.innerHTML = '<option value="">Select a product</option>';
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % carouselItems.length;
+    updateCarousel();
+}
 
-    products.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <div class="product-card-image"><i class="${p.icon} product-icon"></i></div>
-            <h3>${p.name}</h3>
-            <p>${p.description}</p>
-            <div class="product-card-price">${p.price}</div>
-            <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
-            <a href="https://wa.me/919840694616?text=I%20want%20to%20order%20${encodeURIComponent(p.name)}"
-               target="_blank" class="btn btn-primary">Order Now</a>
-            ${isAdmin ? `
-                <div class="admin-actions">
-                    <button class="btn btn-warning btn-small edit-product" data-id="${p.id}">Edit</button>
-                    <button class="btn btn-danger btn-small delete-product" data-id="${p.id}">Delete</button>
-                </div>` : ''}
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + carouselItems.length) % carouselItems.length;
+    updateCarousel();
+}
+
+function goToSlide(index) {
+    currentSlide = index;
+    updateCarousel();
+}
+
+function updateCarousel() {
+    carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
+    
+    // Update indicators
+    indicators.forEach((indicator, index) => {
+        if (index === currentSlide) {
+            indicator.classList.add('active');
+        } else {
+            indicator.classList.remove('active');
+        }
+    });
+}
+
+// Render products on products page
+function renderProducts(filter = 'all', searchTerm = '') {
+    productsGrid.innerHTML = '';
+    
+    let filteredProducts = {};
+    
+    // Apply filters
+    for (const productId in products) {
+        const product = products[productId];
+        
+        // Apply category filter
+        if (filter !== 'all' && product.category !== filter) {
+            continue;
+        }
+        
+        // Apply search filter
+        if (searchTerm && !product.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+            !product.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+            continue;
+        }
+        
+        filteredProducts[productId] = product;
+    }
+    
+    // Render filtered products
+    for (const productId in filteredProducts) {
+        const product = filteredProducts[productId];
+        
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <div class="product-image">
+                <img src="${product.image}" alt="${product.name}">
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-price">₹${product.price} / 50g</div>
+                <div class="quantity-selector">
+                    <button class="quantity-btn minus" data-product="${productId}">-</button>
+                    <input type="text" class="quantity-input" data-product="${productId}" value="0" readonly>
+                    <button class="quantity-btn plus" data-product="${productId}">+</button>
+                </div>
+                <div class="quantity-label">Quantity (50g increments)</div>
+                <button class="add-to-cart" data-product="${productId}">Add to Cart</button>
+            </div>
         `;
-        grid.appendChild(card);
-        const opt = document.createElement('option');
-        opt.value = p.name;
-        opt.textContent = p.name;
-        select.appendChild(opt);
+        
+        productsGrid.appendChild(productCard);
+    }
+    
+    // If no products found
+    if (Object.keys(filteredProducts).length === 0) {
+        productsGrid.innerHTML = '<p style="text-align: center; width: 100%; padding: 40px;">No nuts found matching your criteria.</p>';
+    }
+    
+    // Setup product event listeners
+    setupProductEventListeners();
+}
+
+// Render owner portal forms
+function renderOwnerForms() {
+    productForms.innerHTML = '';
+    
+    for (const productId in products) {
+        const product = products[productId];
+        
+        const form = document.createElement('div');
+        form.className = 'product-edit-form';
+        form.innerHTML = `
+            <div>
+                <div class="form-group">
+                    <label for="${productId}-name">Nut Name</label>
+                    <input type="text" class="form-control" id="${productId}-name" value="${product.name}">
+                </div>
+                <div class="form-group">
+                    <label for="${productId}-description">Description</label>
+                    <textarea class="form-control" id="${productId}-description">${product.description}</textarea>
+                </div>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label for="${productId}-price">Price (₹ per 50g)</label>
+                    <input type="number" class="form-control" id="${productId}-price" value="${product.price}">
+                </div>
+                <div class="form-group">
+                    <label for="${productId}-category">Category</label>
+                    <select class="form-control" id="${productId}-category">
+                        <option value="popular" ${product.category === 'popular' ? 'selected' : ''}>Popular</option>
+                        <option value="premium" ${product.category === 'premium' ? 'selected' : ''}>Premium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="${productId}-image">Nut Image URL</label>
+                    <input type="text" class="form-control" id="${productId}-image" value="${product.image}">
+                </div>
+            </div>
+        `;
+        
+        productForms.appendChild(form);
+    }
+}
+
+// Render order history in owner portal
+function renderOrderHistory() {
+    orderList.innerHTML = '';
+    
+    if (orders.length === 0) {
+        noOrdersMessage.style.display = 'block';
+        return;
+    }
+    
+    noOrdersMessage.style.display = 'none';
+    
+    // Sort orders by date (newest first)
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedOrders.forEach(order => {
+        const orderItem = document.createElement('div');
+        orderItem.className = 'order-item';
+        
+        let itemsHtml = '';
+        order.items.forEach(item => {
+            itemsHtml += `
+                <div class="order-item-row">
+                    <span>${item.name}</span>
+                    <span>${item.quantity}g × ₹${item.price}/50g = ₹${item.total.toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        orderItem.innerHTML = `
+            <div class="order-header">
+                <div class="order-customer">${order.customerName}</div>
+                <div class="order-date">${new Date(order.date).toLocaleString()}</div>
+            </div>
+            <div class="order-items">
+                ${itemsHtml}
+            </div>
+            <div class="order-total">Total: ₹${order.total.toFixed(2)}</div>
+        `;
+        
+        orderList.appendChild(orderItem);
+    });
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Navigation
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetPage = link.getAttribute('data-page');
+            
+            // Hide all pages
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            document.getElementById(targetPage).classList.add('active');
+            
+            // If going to cart page, update cart display
+            if (targetPage === 'cart') {
+                updateCartDisplay();
+            }
+            
+            // If going to owner portal, reset login
+            if (targetPage === 'owner') {
+                resetOwnerPortal();
+            }
+        });
     });
 
-    if (isAdmin) attachAdminEventListeners();
-}
+    // Carousel controls
+    prevButton.addEventListener('click', () => {
+        prevSlide();
+        resetCarouselInterval();
+    });
 
-function attachAdminEventListeners() {
-    document.querySelectorAll('.edit-product').forEach(btn =>
-        btn.onclick = () => editProduct(parseInt(btn.dataset.id)));
-    document.querySelectorAll('.delete-product').forEach(btn =>
-        btn.onclick = () => deleteProduct(parseInt(btn.dataset.id)));
-}
+    nextButton.addEventListener('click', () => {
+        nextSlide();
+        resetCarouselInterval();
+    });
 
-function addProduct(data) {
-    const newP = { id: Date.now(), ...data };
-    products.push(newP);
-    saveProductsToLocalStorage();
-    renderProducts();
-    showNotification("Product added!");
-}
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            goToSlide(index);
+            resetCarouselInterval();
+        });
+    });
 
-function editProduct(id) {
-    const p = products.find(x => x.id === id);
-    document.getElementById('editProductId').value = id;
-    adminProductName.value = p.name;
-    adminProductPrice.value = p.price;
-    adminProductIcon.value = p.icon;
-    adminProductDescription.value = p.description;
-    adminProductFeatures.value = p.features.join("\n");
-    editingProductId = id;
-    submitProductBtn.innerHTML = '<i class="fas fa-save"></i> Update Product';
-    cancelEdit.style.display = 'inline-block';
-}
+    // Continue shopping button
+    continueShoppingBtn.addEventListener('click', () => {
+        // Hide all pages
+        pages.forEach(page => {
+            page.classList.remove('active');
+        });
+        
+        // Show products page
+        document.getElementById('products').classList.add('active');
+    });
 
-function updateProduct(id, data) {
-    const idx = products.findIndex(x => x.id === id);
-    products[idx] = { id, ...data };
-    saveProductsToLocalStorage();
-    renderProducts();
-    showNotification("Product updated!");
-}
-
-function deleteProduct(id) {
-    if (!confirm("Delete this product?")) return;
-    products = products.filter(x => x.id !== id);
-    saveProductsToLocalStorage();
-    renderProducts();
-    showNotification("Product deleted!");
-}
-
-function cancelEdit() {
-    editingProductId = null;
-    document.getElementById('adminProductForm').reset();
-    cancelEdit.style.display = 'none';
-    submitProductBtn.innerHTML = '<i class="fas fa-plus"></i> Add Product';
-}
-
-// Navigation
-function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0, 0);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-
-    document.querySelectorAll('.nav-link').forEach(link =>
-        link.addEventListener('click', e => showPage(link.dataset.page)));
-
-    document.querySelectorAll('button[data-page]').forEach(btn =>
-        btn.addEventListener('click', e => showPage(btn.dataset.page)));
-
-    document.getElementById('mobileMenu').onclick = () =>
-        document.getElementById('navMenu').classList.toggle('show');
-
-    document.getElementById('adminToggle').onclick = () => {
-        if (!isAdmin) {
-            const pwd = prompt("Enter admin password:");
-            if (pwd === adminPassword) {
-                isAdmin = true;
-                document.getElementById('adminPanel').classList.add('active');
-                renderProducts();
-                showNotification("Admin mode enabled");
-            } else alert("Incorrect password!");
-        } else {
-            isAdmin = false;
-            document.getElementById('adminPanel').classList.remove('active');
-            renderProducts();
-            showNotification("Admin mode off");
+    // Place order button
+    placeOrderBtn.addEventListener('click', () => {
+        if (Object.keys(cart).length === 0) {
+            alert('Your nut cart is empty. Please add some premium nuts before placing an order.');
+            return;
         }
-    };
+        
+        // Prompt for customer name
+        const customerName = prompt('Please enter your name for the order:');
+        if (!customerName) {
+            alert('Order cancelled. Please provide your name to place an order.');
+            return;
+        }
+        
+        // Show loading state
+        const originalText = placeOrderBtn.innerHTML;
+        placeOrderBtn.innerHTML = '<div class="loading"></div> Placing Nut Order...';
+        placeOrderBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            // Create order object
+            const orderItems = [];
+            let total = 0;
+            
+            for (const productId in cart) {
+                const item = cart[productId];
+                // Calculate price: (quantity in grams / 50) * price per 50g
+                const itemTotal = (item.quantity / 50) * item.price;
+                total += itemTotal;
+                
+                orderItems.push({
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    total: itemTotal
+                });
+            }
+            
+            const newOrder = {
+                id: Date.now(),
+                customerName: customerName,
+                date: new Date(),
+                items: orderItems,
+                total: total
+            };
+            
+            // Add to orders array
+            orders.push(newOrder);
+            
+            // Show notification to user
+            showNotification('Nut order placed successfully! The owner has been notified.');
+            
+            // Clear the cart
+            cart = {};
+            updateCartDisplay();
+            updateCartCount();
+            
+            // Reset button
+            placeOrderBtn.innerHTML = originalText;
+            placeOrderBtn.disabled = false;
+            
+            // If owner is logged in, update the order display
+            if (ownerContent.style.display === 'block') {
+                renderOrderHistory();
+            }
+        }, 1500);
+    });
 
-    document.getElementById('adminProductForm').onsubmit = e => {
-        e.preventDefault();
-        const data = {
-            name: adminProductName.value,
-            price: adminProductPrice.value,
-            icon: adminProductIcon.value,
-            description: adminProductDescription.value,
-            features: adminProductFeatures.value.split("\n").filter(f => f.trim() !== "")
+    // Print summary button
+    printSummaryBtn.addEventListener('click', () => {
+        if (Object.keys(cart).length === 0) {
+            alert('Your nut cart is empty. Nothing to print.');
+            return;
+        }
+        
+        generatePrintBill();
+    });
+
+    // Product search
+    productSearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value;
+        const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+        renderProducts(activeFilter, searchTerm);
+    });
+
+    // Filter buttons
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            const filter = button.getAttribute('data-filter');
+            const searchTerm = productSearch.value;
+            renderProducts(filter, searchTerm);
+        });
+    });
+
+    // Owner portal login
+    loginBtn.addEventListener('click', () => {
+        if (ownerPassword.value === OWNER_PASSWORD) {
+            passwordSection.style.display = 'none';
+            ownerContent.style.display = 'block';
+            renderOwnerForms();
+            renderOrderHistory();
+        } else {
+            showNotification('Incorrect password!', true);
+        }
+    });
+
+    // Owner portal logout
+    logoutBtn.addEventListener('click', () => {
+        resetOwnerPortal();
+    });
+
+    // Save changes in owner portal
+    saveChangesBtn.addEventListener('click', () => {
+        if (validateProductForms()) {
+            saveProductChanges();
+            showNotification('Nut product changes saved successfully!');
+        }
+    });
+}
+
+// Generate print bill
+function generatePrintBill() {
+    // Set current date
+    const now = new Date();
+    billDate.textContent = now.toLocaleString();
+    
+    // Clear previous bill items
+    billItems.innerHTML = '';
+    
+    let total = 0;
+    
+    // Add items to bill
+    for (const productId in cart) {
+        const item = cart[productId];
+        // Calculate price: (quantity in grams / 50) * price per 50g
+        const itemTotal = (item.quantity / 50) * item.price;
+        total += itemTotal;
+        
+        const billItem = document.createElement('div');
+        billItem.className = 'bill-item';
+        billItem.innerHTML = `
+            <div class="bill-item-name">${item.name}</div>
+            <div class="bill-item-qty">${item.quantity}g</div>
+            <div class="bill-item-price">₹${itemTotal.toFixed(2)}</div>
+        `;
+        
+        billItems.appendChild(billItem);
+    }
+    
+    // Set total
+    billTotal.textContent = `₹${total.toFixed(2)}`;
+    
+    // Show and print the bill
+    printBill.style.display = 'block';
+    window.print();
+    printBill.style.display = 'none';
+}
+
+// Reset carousel interval
+function resetCarouselInterval() {
+    clearInterval(slideInterval);
+    startCarousel();
+}
+
+// Setup product event listeners
+function setupProductEventListeners() {
+    // Use event delegation for dynamically created elements
+    productsGrid.addEventListener('click', function(e) {
+        const target = e.target;
+        
+        // Handle minus button clicks
+        if (target.classList.contains('minus')) {
+            const productId = target.getAttribute('data-product');
+            const input = document.querySelector(`.quantity-input[data-product="${productId}"]`);
+            let value = parseInt(input.value);
+            if (value > 0) {
+                input.value = value - 1;
+            }
+        }
+        
+        // Handle plus button clicks
+        if (target.classList.contains('plus')) {
+            const productId = target.getAttribute('data-product');
+            const input = document.querySelector(`.quantity-input[data-product="${productId}"]`);
+            let value = parseInt(input.value);
+            if (value < 20) { // Maximum 1000g (20 * 50g)
+                input.value = value + 1;
+            } else {
+                showNotification('Maximum quantity reached (1000g)', true);
+            }
+        }
+        
+        // Handle add to cart button clicks
+        if (target.classList.contains('add-to-cart')) {
+            const productId = target.getAttribute('data-product');
+            const input = document.querySelector(`.quantity-input[data-product="${productId}"]`);
+            const quantity = parseInt(input.value);
+            
+            if (quantity > 0) {
+                addToCart(productId, quantity);
+                // Reset quantity input
+                input.value = 0;
+            } else {
+                showNotification('Please select at least 50g of nuts', true);
+            }
+        }
+    });
+}
+
+// Add to cart function
+function addToCart(productId, quantity) {
+    // quantity is in 50g increments, so convert to grams
+    const grams = quantity * 50;
+    
+    if (cart[productId]) {
+        cart[productId].quantity += grams;
+    } else {
+        cart[productId] = {
+            name: products[productId].name,
+            price: products[productId].price, // price per 50g
+            quantity: grams // stored in grams
         };
-        if (editingProductId) {
-            updateProduct(editingProductId, data);
-            editingProductId = null;
-            cancelEdit();
-        } else addProduct(data);
-        e.target.reset();
-    };
+    }
+    
+    // Update cart count
+    updateCartCount();
+    
+    // Show notification
+    showNotification(`${grams}g ${products[productId].name} added to cart!`);
+    
+    // Log to console for debugging
+    console.log('Cart updated:', cart);
+}
 
-    document.getElementById('cancelEdit').onclick = cancelEdit;
+// Update cart display
+function updateCartDisplay() {
+    // Clear current cart items
+    cartItems.innerHTML = '';
+    
+    if (Object.keys(cart).length === 0) {
+        // Show empty cart message
+        cartItems.appendChild(emptyCartMessage);
+        emptyCartMessage.style.display = 'block';
+        subtotalElement.textContent = '₹0.00';
+        totalElement.textContent = '₹0.00';
+    } else {
+        // Hide empty cart message
+        emptyCartMessage.style.display = 'none';
+        
+        // Add each item to cart display
+        let subtotal = 0;
+        
+        for (const productId in cart) {
+            const item = cart[productId];
+            // Calculate price: (quantity in grams / 50) * price per 50g
+            const itemTotal = (item.quantity / 50) * item.price;
+            subtotal += itemTotal;
+            
+            const cartItem = document.createElement('div');
+            cartItem.className = 'cart-item';
+            cartItem.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">₹${item.price} / 50g</div>
+                </div>
+                <div class="item-quantity">Qty: ${item.quantity}g</div>
+                <div class="item-total">₹${itemTotal.toFixed(2)}</div>
+                <button class="remove-item" data-product="${productId}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            cartItems.appendChild(cartItem);
+        }
+        
+        // Update totals
+        subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
+        totalElement.textContent = `₹${subtotal.toFixed(2)}`;
+        
+        // Add event listeners to remove buttons
+        const removeButtons = document.querySelectorAll('.remove-item');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const productId = button.getAttribute('data-product');
+                delete cart[productId];
+                updateCartDisplay();
+                updateCartCount();
+                showNotification('Nut item removed from cart');
+            });
+        });
+    }
+}
 
-    document.getElementById('orderForm').onsubmit = e => {
-        e.preventDefault();
-        const msg = `Order Request:%0AName: ${name.value}%0APhone: ${phone.value}%0AProduct: ${product.value}`;
-        window.open(`https://wa.me/919840694616?text=${msg}`, "_blank");
-        showNotification("Order sent via WhatsApp!");
-        e.target.reset();
-    };
+// Update cart count in header
+function updateCartCount() {
+    let totalGrams = 0;
+    for (const productId in cart) {
+        totalGrams += cart[productId].quantity;
+    }
+    
+    // Display total grams in cart, or convert to kg if over 1000g
+    if (totalGrams >= 1000) {
+        cartCount.textContent = `${(totalGrams / 1000).toFixed(1)}kg`;
+    } else {
+        cartCount.textContent = `${totalGrams}g`;
+    }
+}
 
-    document.getElementById('contactForm').onsubmit = e => {
-        e.preventDefault();
-        const msg = `Contact Request:%0AName: ${contact-name.value}%0APhone: ${contact-phone.value}%0AMessage: ${message.value}`;
-        window.open(`https://wa.me/919840694616?text=${msg}`, "_blank");
-        showNotification("Message sent via WhatsApp!");
-        e.target.reset();
-    };
-});
+// Reset owner portal
+function resetOwnerPortal() {
+    passwordSection.style.display = 'block';
+    ownerContent.style.display = 'none';
+    ownerPassword.value = '';
+}
+
+// Validate product forms
+function validateProductForms() {
+    let isValid = true;
+    const errorFields = [];
+    
+    for (const productId in products) {
+        const nameInput = document.getElementById(`${productId}-name`);
+        const priceInput = document.getElementById(`${productId}-price`);
+        
+        if (!nameInput.value.trim()) {
+            errorFields.push(`${products[productId].name} name`);
+            isValid = false;
+        }
+        
+        if (!priceInput.value || parseInt(priceInput.value) <= 0) {
+            errorFields.push(`${products[productId].name} price`);
+            isValid = false;
+        }
+    }
+    
+    if (!isValid) {
+        showNotification(`Please check: ${errorFields.join(', ')}`, true);
+    }
+    
+    return isValid;
+}
+
+// Save product changes from owner portal
+function saveProductChanges() {
+    for (const productId in products) {
+        const nameInput = document.getElementById(`${productId}-name`);
+        const descriptionInput = document.getElementById(`${productId}-description`);
+        const priceInput = document.getElementById(`${productId}-price`);
+        const categoryInput = document.getElementById(`${productId}-category`);
+        const imageInput = document.getElementById(`${productId}-image`);
+        
+        if (nameInput && descriptionInput && priceInput && categoryInput && imageInput) {
+            products[productId].name = nameInput.value;
+            products[productId].description = descriptionInput.value;
+            products[productId].price = parseInt(priceInput.value);
+            products[productId].category = categoryInput.value;
+            products[productId].image = imageInput.value;
+        }
+    }
+    
+    // Update products display
+    const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+    const searchTerm = productSearch.value;
+    renderProducts(activeFilter, searchTerm);
+}
+
+// Show notification
+function showNotification(message, isError = false) {
+    notification.textContent = message;
+    notification.className = isError ? 'notification error' : 'notification';
+    notification.style.display = 'block';
+    
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+// Initialize the website
+init();
